@@ -1,0 +1,40 @@
+# =============== #
+# Unity generated #
+# =============== #
+Temp/
+Library/
+*.apk
+build/
+
+# Exclude iOS building support files. For adding them to project, get GoogleVRForUnity.unitypackage from:
+# https://raw.githubusercontent.com/googlevr/gvr-unity-sdk/master/GoogleVRForUnity.unitypackage
+Assets/Plugins/iOS/
+
+*.keystore
+/build
+
+# ===================================== #
+# Visual Studio / MonoDevelop generated #
+# ===================================== #
+ExportedObj/
+obj/
+*.svd
+*.userprefs
+/*.csproj
+*.pidb
+*.suo
+/*.sln
+*.user
+*.unityproj
+*.booproj
+
+# ============ #
+# OS generated #
+# ============ #
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
