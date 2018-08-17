@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.IO;
-using System.Collections;
+using System.Collections.Generic;
 
 public class RorshahController : MonoBehaviour
 {
@@ -35,7 +35,9 @@ public class RorshahController : MonoBehaviour
 
     private int[] order;
 
-    private ArrayList log = new ArrayList();
+    private string logFile;
+
+    bool endShow = false;
 
     void Awake()
     {
@@ -55,7 +57,10 @@ public class RorshahController : MonoBehaviour
             order[i] = int.Parse(orderStr[i]);
         }
         Debug.Log(order);
-        Debug.Log(System.DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"));
+        Debug.Log(GetTime());
+
+        logFile = "log " + GetTime() + ".csv";
+        SaveFile(logFile, "Picture;Number;Phase;Subphase;Time");
 
         rend1 = panel1.GetComponent<Renderer>();
         rend1.material.mainTexture = blackTexture;
@@ -65,6 +70,7 @@ public class RorshahController : MonoBehaviour
 
         targetTime = Time.time + entryCooldown;
 
+
     }
 
     // Update is called once per frame
@@ -73,15 +79,6 @@ public class RorshahController : MonoBehaviour
         time = Time.time;
         if (Application.targetFrameRate != target)
             Application.targetFrameRate = target;
-        if (Input.GetMouseButtonDown(0))
-        {
-            pos++;
-            rend1.material.mainTexture = blackTexture;
-            rend2.material.mainTexture = blackTexture;
-            targetTime = Time.time + entryCooldown;
-            currentPhase = Phase.ENTRY;
-
-        }
         if (Time.time >= targetTime)
         {
             switch (currentPhase)
@@ -91,6 +88,7 @@ public class RorshahController : MonoBehaviour
                     currentPhase = Phase.PICTURE;
                     rend1.material.mainTexture = textures[order[pos]];
                     rend2.material.mainTexture = textures[order[pos]];
+                    AppendLog("PICTURE");
                     break;
                 case Phase.PICTURE:
                     targetTime = Time.time + pauseCooldown;
@@ -98,6 +96,7 @@ public class RorshahController : MonoBehaviour
 
                     rend1.material.mainTexture = blackTexture;
                     rend2.material.mainTexture = blackTexture;
+                    AppendLog("PAUSE");
                     break;
                 case Phase.PAUSE:
                     subPhase++;
@@ -107,6 +106,7 @@ public class RorshahController : MonoBehaviour
                         rend1.material.mainTexture = textures[order[pos]];
                         rend2.material.mainTexture = textures[order[pos]];
                         currentPhase = Phase.PICTURE;
+                        AppendLog("PICTURE");
                     }
                     else
                     {
@@ -118,12 +118,18 @@ public class RorshahController : MonoBehaviour
                             rend1.material.mainTexture = blackTexture;
                             rend2.material.mainTexture = blackTexture;
                             currentPhase = Phase.ENTRY;
+                            AppendLog("ENTRY");
                         }
                         else
                         {
-
                             rend1.material.mainTexture = endTexture;
                             rend2.material.mainTexture = endTexture;
+
+                            if (!endShow)
+                            {
+                                AppendLog("END");
+                                endShow = true;
+                            }
                         }
                     }
                     break;
@@ -131,8 +137,18 @@ public class RorshahController : MonoBehaviour
         }
     }
 
+    void AppendLog(string phase) {
+        var ord = pos < order.Length ? order[pos] : -1;
+        File.AppendAllText(Application.persistentDataPath + "/"+ logFile, string.Format("{0};{1};{2};{3};{4}\n", ord.ToString(), pos.ToString(), phase, subPhase.ToString(), GetTime()));
+    }
 
-    public void SaveFile(string name, string[] content)
+    string GetTime()
+    {
+        return System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+    }
+
+
+    public void SaveFile(string name, string content)
     {
         string destination = Application.persistentDataPath + "/" + name;
         FileStream file;
@@ -143,13 +159,9 @@ public class RorshahController : MonoBehaviour
             file.Close();
         }
 
-        StreamWriter writer = new StreamWriter(destination);
+        StreamWriter writer = new StreamWriter(destination, true);
         Debug.Log(content);
-        foreach (string s in content)
-        {
-            Debug.Log(s);
-            writer.WriteLine();
-        }
+        writer.WriteLine(content);
         writer.Flush();
         writer.Close();
     }
@@ -171,7 +183,7 @@ public class RorshahController : MonoBehaviour
         {
             Debug.Log("File not found");
             string defaultRes = "1 5 13 10";
-            SaveFile(name, new string[1] { defaultRes });
+            SaveFile(name, defaultRes);
             return defaultRes;
         }
     }
